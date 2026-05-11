@@ -1,7 +1,7 @@
 {
-  "name": "memory-frames",
+  "name": "alishan-crafts",
   "version": "1.0.0",
-  "description": "Memory Frames — Photo Frame Order Management System",
+  "description": "Alishan Crafts — Photo Frame Order Management System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
