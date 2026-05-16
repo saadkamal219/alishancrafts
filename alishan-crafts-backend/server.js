@@ -18,11 +18,32 @@ const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 // Platform fee per order (in BDT) — configure via PLATFORM_FEE in .env
 const PLATFORM_FEE = parseFloat(process.env.PLATFORM_FEE || "1") || 1;
 
-app.use(cors());
+// ── CORS — allow only the Vercel frontend (and localhost for dev) ────────────
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, Render health checks)
+    if (!origin) return cb(null, true);
+    if (
+      ALLOWED_ORIGINS.includes(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin) ||
+      origin === "http://localhost:3000" ||
+      origin === "http://localhost:5500"
+    ) {
+      return cb(null, true);
+    }
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-app.use(express.static(path.join(__dirname, "public")));
+// Static public serving removed — frontend is deployed separately on Vercel.
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -1057,8 +1078,9 @@ app.post("/api/admin/login", (req, res) => {
   return res.status(401).json({ success: false, message: "Invalid username or password." });
 });
 
-app.get(/^(?!\/api).*$/, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// Non-API routes return 404 JSON — frontend is on Vercel
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Not found." });
 });
 
 app.listen(PORT, () => {
