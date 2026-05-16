@@ -1401,7 +1401,7 @@
         fd.append('message', document.getElementById('message').value.trim());
         selectedFiles.forEach(f => fd.append('photos', f));
 
-        const res = await fetch(`https://alishan-moments-backend.onrender.com/api/orders`, { method: 'POST', body: fd });
+        const res = await fetch(`https://alishancraftsbackend.onrender.com/api/orders`, { method: 'POST', body: fd });
         const data = await res.json();
 
         if (!res.ok || !data.success) {
