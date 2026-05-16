@@ -1251,7 +1251,7 @@
       if (!u || !p) { err.textContent = '✕ Please enter username and password.'; return; }
       err.textContent = '';
       try {
-        const res = await fetch((window.ALISHAN_API_URL || 'https://alishan-moments-backend.onrender.com') + '/api/admin/login', {
+        const res = await fetch((window.ALISHAN_API_URL || 'https://alishancraftsbackend.onrender.com') + '/api/admin/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: u, password: p }),
@@ -1302,7 +1302,7 @@
     });
 
     /* ════ API HELPERS ════ */
-    const API = (window.ALISHAN_API_URL || 'https://alishan-moments-backend.onrender.com') + '/api';
+    const API = (window.ALISHAN_API_URL || 'https://alishancraftsbackend.onrender.com') + '/api';
 
     async function apiFetch(path, options = {}) {
       const res = await fetch(API + path, options);
@@ -1494,7 +1494,7 @@
     /* ════ DOWNLOAD ZIP ════ */
     function downloadOrderZip(id) {
       showAdminToast('⬇ Preparing ZIP — including photos…');
-      window.location.href = (window.ALISHAN_API_URL || 'https://alishan-moments-backend.onrender.com') + '/api/orders/export/zip/' + id;
+      window.location.href = (window.ALISHAN_API_URL || 'https://alishancraftsbackend.onrender.com') + '/api/orders/export/zip/' + id;
     }
 
     /* ════ SALES PDF EXPORT ════ */
@@ -1522,7 +1522,7 @@
       err.textContent = '';
 
       try {
-        const res = await fetch((window.ALISHAN_API_URL || 'https://alishan-moments-backend.onrender.com') + '/api/orders/export/sales-pdf', {
+        const res = await fetch((window.ALISHAN_API_URL || 'https://alishancraftsbackend.onrender.com') + '/api/orders/export/sales-pdf', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ password: pw }),

@@ -1,5 +1,4 @@
-require("dotenv").config(); // ✅ MUST be first — loads env vars before anything uses them
-
+require("dotenv").config(); 
 const express    = require("express");
 const mongoose   = require("mongoose");
 const multer     = require("multer");
@@ -13,12 +12,10 @@ const PDFDocument = require("pdfkit");
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = "https://alishancraftsbackend.onrender.com";
 
-// Platform fee per order (in BDT) — configure via PLATFORM_FEE in .env
 const PLATFORM_FEE = parseFloat(process.env.PLATFORM_FEE || "1") || 1;
 
-// ── CORS — allow only the Vercel frontend (and localhost for dev) ────────────
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map(o => o.trim())
@@ -26,7 +23,6 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Allow requests with no origin (mobile apps, curl, Render health checks)
     if (!origin) return cb(null, true);
     if (
       ALLOWED_ORIGINS.includes(origin) ||
@@ -74,9 +70,6 @@ mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("✅ MongoDB Connected");
 
-    // ── Seed all-time lifetime counter ──────────────────────────────────────
-    // On first run, count existing "done" orders so the number is not 0.
-    // After this, only the everDone flag controls increments.
     const existingCounter = await Counter.findById("processed");
     if (!existingCounter) {
       const doneCount = await Order.countDocuments({ status: "done" });
@@ -84,9 +77,6 @@ mongoose.connect(process.env.MONGO_URI)
       console.log(`✅ Lifetime counter seeded at ${doneCount}`);
     }
 
-    // ── Seed per-page permanent counters ────────────────────────────────────
-    // On first run, build PageCounter from existing done orders so history
-    // is not lost on upgrade. After this, only everDone transitions add to it.
     const existingPages = await PageCounter.countDocuments();
     if (existingPages === 0) {
       const pageGroups = await Order.aggregate([
@@ -99,9 +89,6 @@ mongoose.connect(process.env.MONGO_URI)
       }
     }
 
-    // ── Backfill everDone on existing done orders ────────────────────────────
-    // Any orders already marked "done" before this update don't have everDone=true.
-    // Set it now so they are recognised as already-counted and won't double-count.
     const backfilled = await Order.updateMany(
       { status: "done", everDone: { $ne: true } },
       { $set: { everDone: true } }
@@ -110,8 +97,6 @@ mongoose.connect(process.env.MONGO_URI)
       console.log(`✅ Backfilled everDone=true on ${backfilled.modifiedCount} existing done order(s)`);
     }
 
-    // ── Seed gender counters ─────────────────────────────────────────────────
-    // On first run, count existing orders by gender so history is preserved.
     const maleDoc = await GenderCounter.findById("male");
     const femaleDoc = await GenderCounter.findById("female");
     if (!maleDoc) {
@@ -153,9 +138,6 @@ const orderSchema = new mongoose.Schema(
       default: "pending",
     },
 
-    // everDone: set true the FIRST time this order reaches "done".
-    // NEVER reset back to false on revert. This is the duplicate-count guard.
-    // Counters only increment when everDone flips false → true.
     everDone: {
       type:    Boolean,
       default: false,
